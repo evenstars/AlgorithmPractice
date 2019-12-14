@@ -22,20 +22,20 @@ public class Test {
 
   public void linkedListTest(){
     Practice2 P = new Practice2();
-    Practice2.ListNode l1 = P.new ListNode(2);
-    Practice2.ListNode l2 = P.new ListNode(1);
-    Practice2.ListNode l3 = P.new ListNode(5);
-    Practice2.ListNode l4 = P.new ListNode(4);
-    Practice2.ListNode l5 = P.new ListNode(5);
+    Practice2.ListNode l1 = P.new ListNode(0);
+    Practice2.ListNode l2 = P.new ListNode(0);
+//    Practice2.ListNode l3 = P.new ListNode(5);
+//    Practice2.ListNode l4 = P.new ListNode(4);
+//    Practice2.ListNode l5 = P.new ListNode(5);
     l1.next=l2;
-    l2.next=l3;
+//    l2.next=l3;
 //    l3.next=l4;
 //    l4.next=l5;
-    P.nextLargerNodes(l1);
+    P.isPalindrome2(l1);
   }
 
   public static void main(String[] args){
      Test t = new Test();
-     t.treeTest();
+     t.linkedListTest();
   }
 }

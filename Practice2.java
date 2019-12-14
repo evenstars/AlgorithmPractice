@@ -9454,7 +9454,7 @@ public class Practice2 {
   public int minFountain(int[] f){
     if (f==null || f.length==0)
       return 0;
-    int N = f.length,idx=1,res=0,arrive=0;
+    int N = f.length,idx=1,res=0,arrive=1;
     List<Integer>[] range  = new List[N+1];
     for (int i=1;i<=N;i++)
       range[i] = new ArrayList();
@@ -9497,10 +9497,399 @@ public class Practice2 {
       return res;
   }
 
+  class MAFnodes{
+    int[] smOfX,bgOfX;
+    public MAFnodes(int[] a,int[] b){
+      if (a[0]<b[0] || (a[0]==b[0] && a[1]<b[1])){
+        smOfX = a;
+        bgOfX = b;
+      }
+      else{
+        smOfX = b;
+        bgOfX= a;
+      }
+    }
+  }
+
+  public double minAreaFreeRect(int[][] points) {
+    if (points==null || points.length==0)
+      return 0;
+    int N = points.length;
+    double area=Double.MAX_VALUE;
+    Map<String,List<MAFnodes>> edges = new HashMap<>();
+    for (int i=0;i<N;i++)
+      for (int j=i+1;j<N;j++){
+        if (points[i][0] == points[j][0] && points[i][1]==points[j][1])
+          continue;
+        MAFnodes cur = new MAFnodes(points[i],points[j]);
+        String key = MAFserialize(cur);
+        List<MAFnodes> same;
+        if ((same = edges.get(key))==null){
+          same = new ArrayList<>();
+          edges.put(key,same);
+        }
+        same.add(cur);
+      }
+    for (Map.Entry<String,List<MAFnodes>> same:edges.entrySet()) {
+      if (same.getValue().size()<2)
+        continue;
+      List<MAFnodes> ls = same.getValue();
+      int size = ls.size();
+      for (int i=0;i<size;i++)
+        for (int j=i+1;j<size;j++)
+          area = Math.min(area,MAFgetArea(ls.get(i),ls.get(j)));
+    }
+    return area==Double.MAX_VALUE?0:area;
+  }
+
+  private double MAFgetArea(MAFnodes a,MAFnodes b){
+    return MAFgetDist(a.smOfX,b.smOfX)*MAFgetDist(a.bgOfX,b.smOfX);
+  }
+
+  private double MAFgetDist(int[] a,int[] b){
+    double xDiff = a[0]-b[0],yDiff = a[1]-b[1];
+    return Math.sqrt(xDiff*xDiff+yDiff*yDiff);
+  }
+
+  private String MAFserialize(MAFnodes node){
+    int midX = node.smOfX[0]+node.bgOfX[0],midY = node.smOfX[1]+node.bgOfX[1];
+    int diffX = node.smOfX[0]-node.bgOfX[0],diffY = node.smOfX[1]-node.bgOfX[1];
+    int length = diffX*diffX+diffY*diffY;
+    return midX+" "+midY+" "+length;
+  }
+
+  public boolean reachingPoints(int sx, int sy, int tx, int ty) {
+    if ((sx==tx && (ty-sy)%tx==0 )|| (sy==ty && (tx-sx)%ty==0))
+      return true;
+    if (sx>tx || sy>ty)
+      return false;
+    if (tx>=ty)
+      return reachingPoints(sx,sy,tx%ty,ty);
+    else
+      return reachingPoints(sx,sy,tx,ty%tx);
+  }
+
+  public int countSubstrings(String s) {
+    if (s==null || s.isEmpty())
+      return 0;
+    char[] cs = s.toCharArray();
+    int N = cs.length;
+    int[] res = new int[1];
+    for (int i=0;i<N;i++)
+      CSScount(cs,i,i,res);
+    for (int i=0;i<N-1;i++)
+      CSScount(cs,i,i+1,res);
+    return res[0];
+  }
+
+  private void CSScount(char[] cs,int start,int end,int[] res){
+    int N = cs.length;
+    if (start<0 || end>=N || cs[start]!=cs[end])
+      return;
+    res[0]++;
+    CSScount(cs,start-1,end+1,res);
+  }
+
+  public List<List<Integer>> _combinationSum2(int[] candidates, int target) {
+    List<List<Integer>> res = new ArrayList<>();
+    if (candidates==null || candidates.length==0)
+      return res;
+    Arrays.sort(candidates);
+    CScountCombination(candidates,0,target,new ArrayList<>(),res);
+    return res;
+  }
+
+  private void CScountCombination(int[] candidates,int idx,int remain,List<Integer> path,List<List<Integer>> res){
+    int N = candidates.length;
+    if (remain==0){
+      res.add(new ArrayList<>(path));
+      return;
+    }
+    if (idx>=N || remain<0)
+      return;
+    for (int i=idx;i<N;i++){
+      if (i!=idx && candidates[i]==candidates[i-1])
+        continue;
+      path.add(candidates[i]);
+      CScountCombination(candidates,i+1,remain-candidates[i],path,res);
+      path.remove(path.size()-1);
+    }
+  }
+
+  public int twitter_parkDilemma(int[] cars,int k){
+    if (cars==null || cars.length==0)
+      return 0;
+    int N = cars.length,min = Integer.MAX_VALUE;
+    Arrays.sort(cars);
+    for (int i=0;i<N-k;i++)
+      min = Math.min(min,cars[i+k]-cars[i]+1);
+    return min;
+  }
+
+  public int twitter_careerFair(int[] arrive,int[] duration){
+    if (arrive==null || arrive.length==0)
+      return 0;
+    int N = arrive.length,ans=0,lastEnd=0;
+    int[][] ranges = new int[N][2];
+    for (int i=0;i<N;i++)
+      ranges[i] = new int[]{arrive[i],arrive[i]+duration[i]};
+    Arrays.sort(ranges, new Comparator<int[]>() {
+      @Override
+      public int compare(int[] a, int[] b) {
+        return a[1]-b[1];
+      }
+    });
+    for (int i=0;i<N;i++){
+      if (ranges[i][0]<lastEnd)
+        continue;
+      ans++;
+      lastEnd=ranges[i][1];
+    }
+    return ans;
+  }
+
+  public int twitter_anagram(String s) {
+    if (s==null||s.isEmpty()||(s.length() &1)==1)
+      return -1;
+    char[] cs = s.toCharArray();
+    int N = cs.length,res=0;
+    int[] count = new int[26];
+    for (int i=0;i<(N>>1);i++)
+      count[cs[i]-'a']++;
+    for (int i=(N>>1);i<N;i++)
+      count[cs[i]-'a']--;
+    for (int i=0;i<26;i++)
+      if (count[i]>0)
+        res+=count[i];
+    return res;
+  }
+
+  public boolean isPalindrome2(ListNode head) {
+    if (head==null)
+      return true;
+    ListNode reverse = reverseLinkedList(head);
+    return isSameLinkedList(reverse,head);
+  }
+
+  private ListNode reverseLinkedList(ListNode head){
+    if (head==null || head.next==null)
+      return head;
+    ListNode cur = head.next;
+    ListNode tail = new ListNode(head.val);
+    while (cur!=null){
+      ListNode temp = new ListNode(cur.val);
+      temp.next = tail;
+      tail = temp;
+      cur = cur.next;
+    }
+    return tail;
+  }
+
+  private boolean isSameLinkedList(ListNode head1,ListNode head2){
+    while (head1!=null && head2!=null){
+      if (head1.val!=head2.val)
+        return false;
+      head1=head1.next;
+      head2 = head2.next;
+    }
+    return head1==null && head2==null;
+  }
+
+  public List<Integer> grayCode(int n) {
+    List<Integer> res = new ArrayList<>();
+    res.add(0);
+    if (n==0)
+      return res;
+    List<Integer> temp = new ArrayList<>();
+    for (int i=1;i<=n;i++){
+      temp.addAll(res);
+      for (int j=res.size()-1;j>=0;j--)
+        temp.add((1<<(i-1))|res.get(j));
+      res = temp;
+      temp = new ArrayList<>();
+    }
+    return res;
+  }
+
+  public static int restock(List<Integer> itemCount, int target) {
+    // Write your code here
+    long res = 0;
+    int N = itemCount.size();
+    for (int i=0;i<N;i++){
+      res+=(long)itemCount.get(i);
+      if (res>=target)
+        return (int)(res-target);
+    }
+    return (int)(target-res);
+  }
+
+  public static int kDifference(List<Integer> a, int k) {
+    // Write your code here
+    Set<Integer> elements = new HashSet<>();
+    for (int val:a)
+      elements.add(val);
+    int res = 0;
+    for (int i:a)
+      if (elements.contains(i+k))
+        res++;
+    return res;
+  }
+
+  public static long carParkingRoof(List<Long> cars, int k) {
+    // Write your code here
+    Collections.sort(cars);
+    int N = cars.size();
+    long res = Long.MAX_VALUE;
+    for (int i=0;i<=N-k;i++)
+      res = Math.min(res,cars.get(i+k-1)-cars.get(i)+1);
+    return res;
+  }
+
+  public static int maximumTotalWeight(List<Integer> weights, List<Integer> tasks, int p) {
+    // Write your code here
+    int N = weights.size();
+    int[][] maxWeight = new int[N][p+1];
+    int res = maxTotalWeightHelper(weights,tasks,maxWeight,0,0,p);
+    return res;
+  }
+
+  private static int maxTotalWeightHelper(List<Integer> weights,List<Integer> tasks,int[][] maxWeight,int curTaskId,int used,int p){
+    int N = weights.size();
+    if (curTaskId>=N || used>=p)
+      return 0;
+    if (maxWeight[curTaskId][used]!=0)
+      return maxWeight[curTaskId][used];
+    if (p-used < (tasks.get(curTaskId)<<1))
+      maxWeight[curTaskId][used] = maxTotalWeightHelper(weights,tasks,maxWeight,curTaskId+1,used,p);
+    else
+      maxWeight[curTaskId][used] = Math.max(maxTotalWeightHelper(weights,tasks,maxWeight,curTaskId+1,used,p),
+              weights.get(curTaskId)+maxTotalWeightHelper(weights,tasks,maxWeight,curTaskId+1,used+(tasks.get(curTaskId)<<1),p));
+    return  maxWeight[curTaskId][used];
+  }
+
+  public int[][] generateMatrix(int n) {
+    int[][] ans= new int[n][n];
+    int rStart=0,rEnd = n-1,cStart = 0,cEnd = n-1,idx = 1,target = n*n;
+    while (idx<=target){
+      for (int i=cStart;i<=cEnd;i++)
+        ans[rStart][i] = idx++;
+      rStart++;
+      for (int i=rStart;i<=rEnd;i++)
+        ans[i][cEnd]=idx++;
+      cEnd--;
+      for (int i=cEnd;i>=cStart;i--)
+        ans[rEnd][i]=idx++;
+      rEnd--;
+      for (int i=rEnd;i>=rStart;i--)
+        ans[i][cStart]= idx++;
+      cStart++;
+    }
+    return ans;
+  }
+
+  public int findMin(int[] nums) {
+    if (nums==null||nums.length==0)
+      throw new IllegalArgumentException();
+    if (nums.length==1)
+      return nums[0];
+    int N = nums.length;
+    if (nums[0]<nums[N-1])
+      return nums[0];
+    int left = 0,right = N-1;
+    while (left<=right){
+      int mid = (left+right)>>1;
+      if (nums[mid]>=nums[0])
+        left=mid+1;
+      else
+        right = mid-1;
+    }
+    return nums[left];
+  }
+
+  class AutocompleteSystem {
+
+    class TrieNode{
+      int count;
+      String str;
+      TrieNode[] nexts;
+      public TrieNode(String str){
+        this.str = str;
+        count=0;
+        nexts = new TrieNode[27];
+      }
+    }
+
+    private void insertTrie(TrieNode root,String str,int times){
+      char[] cs = str.toCharArray();
+      StringBuilder sb = new StringBuilder();
+      for (int i=0;i<cs.length;i++){
+        sb.append(cs[i]);
+        int idx = cs[i]==' '?26:cs[i]-'a';
+        if (root.nexts[idx]==null)
+          root.nexts[idx]=new TrieNode(sb.toString());
+        root = root.nexts[idx];
+      }
+      root.count=times;
+    }
+
+    private TrieNode root,cur;
+    private StringBuilder stringBuilder;
+
+    public AutocompleteSystem(String[] sentences, int[] times) {
+      root = new TrieNode("");
+      for (int i=0;i<sentences.length;i++)
+        insertTrie(root,sentences[i],times[i]);
+      cur = root;
+      stringBuilder = new StringBuilder();
+    }
+
+    public List<String> input(char c) {
+      if (c=='#'){
+        cur.count++;
+        cur.str = stringBuilder.toString();
+        cur = root;
+        stringBuilder.setLength(0);
+        return new ArrayList<>();
+      }
+      stringBuilder.append(c);
+      int idx = c==' '?26:c-'a';
+      if (cur.nexts[idx]==null){
+        cur.nexts[idx] = new TrieNode(stringBuilder.toString());
+        cur=cur.nexts[idx];
+        return new ArrayList<>();
+      }
+      cur=cur.nexts[idx];
+      List<TrieNode> res = new ArrayList<>();
+      getMostPossible(cur,res);
+      Collections.sort(res, new Comparator<TrieNode>() {
+        @Override
+        public int compare(TrieNode a, TrieNode b) {
+          return a.count==b.count?a.str.compareTo(b.str):b.count-a.count;
+        }
+      });
+      List<String> ans = new ArrayList<>();
+      for (int i=0;i<Math.min(3,res.size());i++)
+        ans.add(res.get(i).str);
+      return ans;
+    }
+
+    private void getMostPossible(TrieNode node,List<TrieNode> res){
+      if (node.count>0)
+        res.add(node);
+      for (int i=0;i<27;i++)
+        if (node.nexts[i]!=null)
+          getMostPossible(node.nexts[i],res);
+    }
+  }
+
   public static void main(String[] args) {
     Practice2 p = new Practice2();
 //    Random r = new Random();
-//    System.out.println(r.nextInt(240));
-    p.numberOfTokens(4,new int[][]{{0,1,1},{0,2,2},{1,1,5},{1,2,7}});
+//    System.out.println(r.nextInt(239));
+    AutocompleteSystem a = p.new AutocompleteSystem(new String[]{"i love you", "island","ironman", "i love leetcode"},new int[]{5,3,2,2});
+    a.input('i');
+    a.input(' ');
+    a.input('a');
+    a.input('#');
   }
 }
